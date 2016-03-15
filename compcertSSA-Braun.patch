@@ -1,0 +1,228 @@
+diff --git a/compcertSSA/_tags b/compcertSSA/_tags
+index 27f3e87..9826e18 100644
+--- a/compcertSSA/_tags
++++ b/compcertSSA/_tags
+@@ -1,6 +1,6 @@
+ <**/*.cmx>: debug
+ <**/*.native>: debug
+-<driver/Driver.*{byte,native}>: use_unix,use_str,use_Cparser
++<driver/Driver.*{byte,native}>: use_nums,use_unix,use_str,use_Cparser
+ <exportclight/Clightgen.*{byte,native}>: use_unix,use_str,use_Cparser
+ <checklink/*.ml>: pkg_bitstring,warn_error_A
+ <checklink/Validator.*{byte,native}>: pkg_unix,pkg_str,pkg_bitstring,use_Cparser
+diff --git a/compcertSSA/lib/Camlcoq.ml b/compcertSSA/lib/Camlcoq.ml
+index 5cc53b3..d316424 100644
+--- a/compcertSSA/lib/Camlcoq.ml
++++ b/compcertSSA/lib/Camlcoq.ml
+@@ -326,7 +326,6 @@ let camlfloat_of_coqfloat f =
+
+ (* Timing facility *)
+
+-(*
+ let timers = Hashtbl.create 9
+
+ let add_to_timer name time =
+@@ -334,33 +333,42 @@ let add_to_timer name time =
+   Hashtbl.replace timers name (old +. time)
+
+ let time name fn arg =
+-  let start = Unix.gettimeofday() in
++  let start_t = Unix.times() in
++  let start = start_t.Unix.tms_utime +. start_t.Unix.tms_stime in
+   try
+     let res = fn arg in
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     res
+   with x ->
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     raise x
+
+ let time2 name fn arg1 arg2 =
+-  let start = Unix.gettimeofday() in
++  let start_t = Unix.times() in
++  let start = start_t.Unix.tms_utime +. start_t.Unix.tms_stime in
+   try
+     let res = fn arg1 arg2 in
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     res
+   with x ->
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     raise x
+
+ let time3 name fn arg1 arg2 arg3 =
+-  let start = Unix.gettimeofday() in
++  let start_t = Unix.times() in
++  let start = start_t.Unix.tms_utime +. start_t.Unix.tms_stime in
+   try
+     let res = fn arg1 arg2 arg3 in
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     res
+   with x ->
+-    add_to_timer name (Unix.gettimeofday() -. start);
++    let end_t = Unix.times() in
++    add_to_timer name (end_t.Unix.tms_utime +. end_t.Unix.tms_stime -. start);
+     raise x
+
+ let print_timers () =
+@@ -369,7 +377,6 @@ let print_timers () =
+     timers
+
+ let _ = at_exit print_timers
+-*)
+
+ (* Heap profiling facility *)
+
+diff --git a/compcertSSA/midend/SSA/ExternSSAgen.ml b/compcertSSA/midend/SSA/ExternSSAgen.ml
+index 08eeb31..c7f731a 100644
+--- a/compcertSSA/midend/SSA/ExternSSAgen.ml
++++ b/compcertSSA/midend/SSA/ExternSSAgen.ml
+@@ -465,8 +465,125 @@ let genSSA_V2 f live =
+   let def = ptmap_to_ptree rename_def in
+     (max_index, def, def_phi)
+
+-let genSSA f live =
++let genSSA_cytron f live =
+   let (max, def, phi) = genSSA_V2 f live in
+-    ((max, def), phi)
++  ((max, def), phi)
+
+
++let output_cfg fd succ defs phis name =
++  let oc = open_out name in
++  Printf.fprintf oc "digraph G { node [style=rounded, shape=box] ";
++  PTree.fold (fun () n ins ->
++		let i = int_of_positive n in
++    Printf.fprintf oc "\"N%d\" [label=\"%d: %s{%s%s} := {%s}\"];\n" i i
++      (match PTree.get n phis with
++       Some n_phis -> Printf.sprintf "phis: %s\n"
++        (String.concat ", " (List.map (fun (x,y) -> Printf.sprintf "%d_%d" (int_of_positive x) (int_of_positive y)) (PTree.elements n_phis)))
++       | None -> "")
++      (String.concat ", " (List.map string_of_int (Ptset.elements (var_def (Some ins)))))
++      (match PTree.get n defs with
++       Some def -> Printf.sprintf "_%d" (int_of_positive def)
++       | None -> "")
++      (String.concat ", " (List.map string_of_int (Ptset.elements (var_use (Some ins)))))
++  ) (fd.RTL.fn_code) ();
++  PTree.fold (fun () n ins ->
++		let i = int_of_positive n in
++		let succ = succ i in
++		  List.iter (Printf.fprintf oc "\"N%d\" -> \"N%d\"; " i ) succ)
++    (fd.RTL.fn_code) ();
++  Printf.fprintf oc "}\n";
++  close_out oc
++
++open BraunSSA.BraunSSA
++
++let default d opt = match opt with
++  Some x -> x
++| None -> d
++let get opt = match opt with Some x -> x | None -> failwith "get"
++let mapping_fold _A f (Mapping t) = fold _A f t
++
++let equal : 'a equal = {equal = (=)}
++let linorder : 'a linorder = {order_linorder = {preorder_order = {ord_preorder = {less_eq = (<=); less = (<)}}}}
++let empty : 'a set = bot_set linorder
++
++let genSSA f (live : positive -> Regset.t) =
++  let ((max, defs), phis) = genSSA_cytron f live in
++  ((max, defs), phis)
++
++let genSSA_braun f : SSA.coq_function =
++  let entry = entry f in
++  let (predecessors, cfg) = time "Braun prologue" (fun () ->
++    let (defs, uses) = PTree.fold (fun (defs, uses) n ins ->
++      let ni = int_of_positive n in
++      let n_defs =
++        if n = f.fn_entrypoint then
++          set linorder (List.map int_of_positive f.fn_params)
++        else
++          match instr_defs ins with
++            Some d -> set linorder [int_of_positive d]
++          | None -> empty in
++      let n_uses = set linorder (List.map int_of_positive (instr_uses ins)) in
++      (Ptmap.add ni n_defs defs, Ptmap.add ni n_uses uses)
++    ) f.fn_code (Ptmap.empty, Ptmap.empty) in
++    let defs n = Ptmap.find n defs in
++    let uses n = Ptmap.find n uses in
++    let alphn = List.map (fun (n,_) -> int_of_positive n) (PTree.elements f.fn_code) in
++    let predecessors = PTree.fold (fun t n succs ->
++      let ni = int_of_positive n in
++      List.fold_left (fun t m ->
++        let mi = int_of_positive m in
++        Ptmap.modify mi (fun xs -> ni::default [] xs) t
++      ) t succs
++    ) (RTL.successors_map f) Ptmap.empty in
++    let predecessors' n = if n = entry then [] else Ptmap.find n predecessors in
++    let si_cfg = Abs_si_cfg_wf (Gen_cfg_ext (alphn, predecessors', entry, defs, uses, ())) in
++    (predecessors, si_wf_disj_cfg_wf linorder linorder si_cfg)
++  ) () in
++  let ssa_cfg = time3 "Braun phase I" gen_ssa_cfg_wf linorder linorder cfg in
++  let (uses, phis) = time "Braun phase II" (gen_ssa_wf_notriv_substAll linorder linorder (equal,linorder)) ssa_cfg in
++  time "Braun epilogue" (fun () ->
++    let val_to_reg (v,(n,p)): positive * positive =
++      if n == entry then
++        (positive_of_int v, Coq_xH) (* param *)
++      else (positive_of_int v, positive_of_int (2*n + (if p == Defs then 1 else 0))) in
++
++    let (new_code,phi_code) = PTree.fold (fun (new_code,phi_code) n ins ->
++      let ni = int_of_positive n in
++      let lookup_idx vals var =
++        let vari = int_of_positive var in
++        let n = List.assoc vari (sorted_list_of_set linorder vals) in
++        val_to_reg (vari,n) in
++      let new_code = PTree.set n (rename_instr n
++          (lookup_idx (gen_ssa_wf_ssa_defs linorder linorder linorder ssa_cfg (ni,Defs)))
++          (lookup_idx (default empty (lookupa linorder uses (ni,PhisUses))))
++          ins)
++        new_code in
++      let phi_code = if ni <> entry && List.length (Ptmap.find ni predecessors) > 1 then
++        PTree.set n [] phi_code
++      else phi_code in
++      (new_code,phi_code)
++    ) f.fn_code (PTree.empty,PTree.empty) in
++
++    let phi_code = mapping_fold linorder (fun ((n,_),v) vs phi_code ->
++      if n == entry then
++        phi_code
++      else
++        let np = positive_of_int n in
++        let vs = List.map val_to_reg vs in
++        let phi = SSA.Iphi(vs, val_to_reg v) in
++        let phiblock = get (PTree.get np phi_code) in
++        PTree.set np (phi::phiblock) phi_code
++    ) phis phi_code in
++
++    let max_idx = 2 * List.length (PTree.elements f.fn_code) in
++    let max_idx = (Datatypes.S (length_pos (positive_of_int max_idx))) in
++
++    { SSA.fn_sig = f.RTL.fn_sig;
++      SSA.fn_params = (List.map (fun r -> (r, Coq_xH)) f.RTL.fn_params);
++      SSA.fn_stacksize = f.RTL.fn_stacksize;
++      SSA.fn_code = new_code;
++      SSA.fn_phicode = phi_code;
++      SSA.fn_max_indice = max_idx;
++      SSA.fn_entrypoint = f.RTL.fn_entrypoint
++    }
++  ) ()
+diff --git a/compcertSSA/myocamlbuild.ml b/compcertSSA/myocamlbuild.ml
+index 22709d7..393ede4 100644
+--- a/compcertSSA/myocamlbuild.ml
++++ b/compcertSSA/myocamlbuild.ml
+@@ -7,6 +7,7 @@ dispatch begin function
+     (* libraries and syntax extensions accessed via ocamlfind *)
+     flag ["ocaml"; "link"; "pkg_unix"] & S[A"-package"; A "unix"];
+     flag ["ocaml"; "link"; "pkg_str"] & S[A"-package"; A "str"];
++    flag ["ocaml"; "link"; "pkg_nums"] & S[A"-package"; A "nums"];
+     flag ["ocaml"; "compile";  "pkg_bitstring"] & S[A"-package"; A"bitstring,bitstring.syntax"; A"-syntax"; A"bitstring.syntax,camlp4o"];
+     flag ["ocaml"; "ocamldep";  "pkg_bitstring"] & S[A"-package"; A"bitstring,bitstring.syntax"; A"-syntax"; A"bitstring.syntax,camlp4o"];
+     flag ["ocaml"; "link";  "pkg_bitstring"] & S[A"-package"; A"bitstring"]

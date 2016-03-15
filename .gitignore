@@ -1,0 +1,8 @@
+output/*
+*~
+compcertSSA
+compcertSSA-2.0.tar.gz
+test/if.c
+test/ifgen
+if.o
+ifplot.data

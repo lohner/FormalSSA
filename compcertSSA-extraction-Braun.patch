@@ -1,0 +1,33 @@
+diff --git b/compcertSSA/extraction/SSAvalid.ml a/compcertSSA/extraction/SSAvalid.ml
+index 46db589..914dff3 100644
+--- b/compcertSSA/extraction/SSAvalid.ml
++++ a/compcertSSA/extraction/SSAvalid.ml
+@@ -395,16 +395,22 @@ let typecheck_function f max_indice def def_phi live =
+         | Error msg0 -> Error msg0)
+   else Error (msg [])
+
++let count_phis name f =
++  Printf.printf "Phis %s %d\n" name (PTree.fold (fun acc _ phis -> acc + List.length phis) f.fn_phicode 0)
++
+ (** val transf_function : RTL.coq_function -> coq_function res **)
+
+ let transf_function f =
+-  match get_option (analyze f)
++  let cytron = Camlcoq.time "Cytron" (fun () -> match get_option (Camlcoq.time "Cytron live analysis" analyze f)
+           ('B'::('a'::('d'::(' '::('l'::('i'::('v'::('e'::(' '::('a'::('n'::('a'::('l'::('y'::('s'::('i'::('s'::[]))))))))))))))))) with
+   | OK x ->
+-    let (p, def_phi) = extern_gen_ssa f (fun pc -> coq_Lin f pc (coq_Lout x))
++    let (p, def_phi) = Camlcoq.time "Cytron extern" (fun () -> extern_gen_ssa f (fun pc -> coq_Lin f pc (coq_Lout x))) ()
+     in
+     let (size, def) = p in
+-    typecheck_function f size def def_phi (fun pc ->
+-      coq_Lin f pc (coq_Lout x))
+-  | Error msg0 -> Error msg0
+-
++    Camlcoq.time "Cytron validation" (fun () -> typecheck_function f size def def_phi (fun pc ->
++      coq_Lin f pc (coq_Lout x))) ()
++  | Error msg0 -> Error msg0) () in
++  let braun = Camlcoq.time "Braun" ExternSSAgen.genSSA_braun f in
++  (match cytron with OK x -> count_phis "Cytron" x);
++  count_phis "Braun" braun;
++  OK braun
