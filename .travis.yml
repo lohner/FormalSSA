@@ -26,15 +26,12 @@ cache:
   - ${INSTALL_DIR}
   - $HOME/.isabelle
 
-before_install:
-  - ulimit -a
+install:
   - mkdir -p ${INSTALL_DIR}
   - test -e $ISABELLE || { wget ${ISABELLE_URL} && tar -C ${INSTALL_DIR}/ -xzf ${ISABELLE_TARBALL}; }
   - test -e `$ISABELLE getenv -b ISABELLE_HOME`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/HOL || $ISABELLE build -b -s -v HOL
   - test -e ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
   - test -e ${ISABELLE_USER_SETTINGS} || { mkdir -p $(dirname ${ISABELLE_USER_SETTINGS}) && echo 'init_component "${AFP_DIR}"' > ${ISABELLE_USER_SETTINGS}; }
   - (cd ${AFP_DIR}; hg pull -u)
-
-install: true
 
 script: make ccomp
