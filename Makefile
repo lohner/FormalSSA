@@ -21,7 +21,7 @@ compcertSSA/.patched: $(COMPCERTSSA_FILE)
 compcertSSA/midend/SSA/BraunSSA.ml: $(wildcard *.thy) ROOT | compcertSSA/midend/SSA
 	@test `$(ISABELLE) getenv -b ISABELLE_IDENTIFIER` = $(ISABELLE_VERSION) || { echo "ERROR: This formalization needs Isabelle2016 to build properly" && exit 1; }
 	@test -d `$(ISABELLE) getenv -b AFP` || { echo "ERROR: You need the Archive of Formal Proofs (http://afp.sf.net) installed as an Isabelle component" && exit 1; }
-	$(ISABELLE) build -c -d '$$AFP' -d . compcertSSA
+	$(ISABELLE) build -c -v -d '$$AFP' -d . compcertSSA
 
 compcertSSA/midend/SSA/ExternSSAgen.ml: compcertSSA/.patched
 

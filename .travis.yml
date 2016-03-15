@@ -27,6 +27,7 @@ cache:
   - $HOME/.isabelle
 
 before_install:
+  - ulimit -a
   - mkdir -p ${INSTALL_DIR}
   - test -e $ISABELLE || { wget ${ISABELLE_URL} && tar -C ${INSTALL_DIR}/ -xzf ${ISABELLE_TARBALL}; }
   - test -e `$ISABELLE getenv -b ISABELLE_HOME`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/HOL || $ISABELLE build -b -s -v HOL
