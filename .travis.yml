@@ -1,6 +1,8 @@
+dist: trusty
+
 language: generic
 
-sudo: false
+sudo: required
 
 addons:
   apt:
