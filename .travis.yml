@@ -46,6 +46,6 @@ install:
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
   - (cd ${AFP_DIR}; hg pull -u)
   - opam init -y
-  - opam install -y coq.8.4.5
+  - travis_wait opam install -y coq.8.4.5
 
 script: true || make FormalSSA ISABELLE=${ISABELLE}
