@@ -5,10 +5,16 @@ sudo: false
 addons:
   apt:
     packages:
-    - ocaml-nox
-    - coq
     - texlive-latex-base
     - texlive-latex-extra
+
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - opam
+    - ocaml
 
 env:
   global:
