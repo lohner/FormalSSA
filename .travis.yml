@@ -26,6 +26,7 @@ env:
 cache:
   directories:
   - ${INSTALL_DIR}
+  - ${HOME}/.isabelle
 
 install:
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
