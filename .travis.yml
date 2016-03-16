@@ -37,4 +37,4 @@ install:
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
   - (cd ${AFP_DIR}; hg pull -u)
 
-script: make ccomp ISABELLE=${ISABELLE}
+script: make FormalSSA ISABELLE=${ISABELLE}
