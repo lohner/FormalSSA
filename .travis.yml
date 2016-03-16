@@ -49,5 +49,5 @@ install:
   - travis_wait opam install -y coq.8.4.5
 
 script:
-  - ${ISABELLE} build -b -d '$AFP' Collections
+  - ${ISABELLE} build -b -v -d '$AFP' Collections
   - true || make FormalSSA ISABELLE=${ISABELLE}
