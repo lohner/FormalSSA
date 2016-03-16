@@ -4,17 +4,13 @@ sudo: false
 
 addons:
   apt:
-    packages:
-    - texlive-latex-base
-    - texlive-latex-extra
-
-addons:
-  apt:
     sources:
     - avsm
     packages:
     - opam
     - ocaml
+    - texlive-latex-base
+    - texlive-latex-extra
 
 env:
   global:
