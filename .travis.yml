@@ -28,11 +28,15 @@ env:
   - AFP_BRANCH: afp-2016
   - AFP_REPO: https://bitbucket.org/isa-afp/${AFP_BRANCH}
   - AFP_DIR: ${INSTALL_DIR}/${AFP_BRANCH}
+  - OPAM_DIR: ${HOME}/.opam
+  - COQC: ${OPAM_DIR}/system/bin/coqc
+  - PATH: $(dirname ${COQC}):$PATH
 
 cache:
   directories:
   - ${INSTALL_DIR}
   - ${HOME}/.isabelle
+  - ${OPAM_DIR}
 
 install:
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
@@ -43,5 +47,7 @@ install:
   - test -e `$ISABELLE getenv -b ISABELLE_HOME`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/HOL || $ISABELLE build -b -s -v HOL
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
   - (cd ${AFP_DIR}; hg pull -u)
+  - test -d ${OPAM_DIR} || opam init -y
+  - test -x ${COQC} || opam install -y coq.8.4.5
 
 script: true || make FormalSSA ISABELLE=${ISABELLE}
