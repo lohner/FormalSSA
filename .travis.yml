@@ -30,13 +30,15 @@ env:
   - AFP_DIR: ${INSTALL_DIR}/${AFP_BRANCH}
   - OPAM_DIR: ${HOME}/.opam
   - COQC: ${OPAM_DIR}/system/bin/coqc
-  - PATH: $(dirname ${COQC}):$PATH
 
 cache:
   directories:
   - ${INSTALL_DIR}
   - ${HOME}/.isabelle
   - ${OPAM_DIR}
+
+before_install:
+  - export PATH=$(dirname ${COQC}):$PATH
 
 install:
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
