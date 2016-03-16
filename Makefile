@@ -32,7 +32,7 @@ compcertSSA/Makefile.config: compcertSSA/.patched
 	cd compcertSSA;	./configure $(COMPCERTSSA_TARGET)
 
 compcertSSA/extraction/.patched: compcertSSA/Makefile.config
-	$(MAKE) -j extraction -C compcertSSA
+	$(MAKE) -j 2 extraction -C compcertSSA
 	patch -l -p1 < $(COMPCERTSSA_EXTRACTION_PATCH)
 	touch $@
 
