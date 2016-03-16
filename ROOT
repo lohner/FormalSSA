@@ -4,7 +4,7 @@ theories
 
 chapter AFP
 
-session "FormalSSA_base" (AFP) = "Collections" +
+session "FormalSSA_base" = "Collections" +
 theories
   "~~/src/HOL/Library/While_Combinator"
   "~~/src/HOL/Library/Product_Lexorder"
@@ -17,7 +17,7 @@ theories
   "$AFP/Slicing/While/AdditionalLemmas"
   "$AFP/Dijkstra_Shortest_Path/GraphSpec"
 
-session "FormalSSA" (AFP) = "FormalSSA_base" +
+session "FormalSSA" = "FormalSSA_base" +
 options[document=pdf,  document_output=output]
 theories
   FormalSSA_Misc
