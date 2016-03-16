@@ -9,6 +9,7 @@ addons:
     packages:
     - ocaml-nox
     - coq
+    - texlive-latex-base
 
 env:
   global:
