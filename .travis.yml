@@ -56,8 +56,7 @@ install:
 
 script:
   - make ccomp ISABELLE=${ISABELLE}
-  - make -C compcertSSA/test/spass ssa
-  - true || (set -o pipefail; make -C compcertSSA/test/spass ssa | ./measure.py)
+  - (set -o pipefail; make -C compcertSSA/test/spass ssa | ./measure.py)
 
 before_cache:
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/FormalSSA*
