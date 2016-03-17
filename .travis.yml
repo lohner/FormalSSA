@@ -51,9 +51,10 @@ install:
   - grep ML_OPTIONS ${ISABELLE_USER_SETTINGS} || echo 'ML_OPTIONS="-H 500"' >> ${ISABELLE_USER_SETTINGS}
 
 script:
-  - make FormalSSA ISABELLE=${ISABELLE}
+  - make ccomp ISABELLE=${ISABELLE}
 
 before_cache:
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/FormalSSA*
+  - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/compcertSSA.gz
 
