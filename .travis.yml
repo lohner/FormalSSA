@@ -58,5 +58,5 @@ before_cache:
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/compcertSSA.gz
-  - rm -f `find ${TRAVIS_BUILD_DIR}/compcertSSA \( -type f -o -type l \) -not -name "*.vo"`
+  - rm -f `find ${TRAVIS_BUILD_DIR}/compcertSSA \( -type f -o -type l \) -not -name "*.vo" -not -name "ndfun*"`
   - rm -r `find ${TRAVIS_BUILD_DIR}/compcertSSA -type d -empty`
