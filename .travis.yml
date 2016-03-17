@@ -25,7 +25,7 @@ env:
   - AFP_REPO: https://bitbucket.org/isa-afp/${AFP_BRANCH}
   - AFP_DIR: ${INSTALL_DIR}/${AFP_BRANCH}
   - OPAM_DIR: ${HOME}/.opam
-  - COQC: ${OPAM_DIR}/system/bin/coqc
+  - OPAM_INIT: ${OPAM_DIR}/opam-init/init.sh
 
 cache:
   directories:
@@ -34,9 +34,9 @@ cache:
   - ${TRAVIS_BUILD_DIR}/compcertSSA/extraction
 
 before_install:
-  - opam init -y
-  - travis_wait opam install -y coq.8.4.5
-  - export PATH=$(dirname ${COQC}):$PATH
+  - test -e ${OPAM_INIT} || opam init -y
+  - . ${OPAM_INIT}
+  - which coqc || travis_wait opam install -y coq.8.4.5
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
   - test -e $ISABELLE || { wget ${ISABELLE_URL} && tar -C ${INSTALL_DIR}/ -xzf ${ISABELLE_TARBALL}; }
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
