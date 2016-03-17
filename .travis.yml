@@ -60,8 +60,10 @@ before_cache:
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/compcertSSA.gz
-  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "*.vo" > /tmp/cccf
-  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "*.vp" | sed -e "s/\.vp/\.v/g" >> /tmp/cccf
-  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "ndfun*" >> /tmp/cccf
-  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && shopt -s extglob && echo !(`cat /tmp/cccf | tr '\n' '|'`) | xargs rm
+  - find ${TRAVIS_BUILD_DIR}/compcertSSA -name "*.vo" > /tmp/cccf
+  - find ${TRAVIS_BUILD_DIR}/compcertSSA -name "*.vp" | sed -e "s/\.vp/\.v/g" >> /tmp/cccf
+  - find ${TRAVIS_BUILD_DIR}/compcertSSA -name "ndfun*" >> /tmp/cccf
+  - sort /tmp/cccf > /tmp/cccf.sorted
+  - find ${TRAVIS_BUILD_DIR}/compcertSSA -type f -o -type l | sort > /tmp/cc.all
+  - comm -23 /tmp/cc.all /tmp/cccf.sorted | xargs rm
   - rm -r `find ${TRAVIS_BUILD_DIR}/compcertSSA -type d -empty`
