@@ -13,6 +13,7 @@ addons:
     - texlive-latex-extra
     - pgf
     - texlive-pictures
+    - libc6-dev-i386
 
 env:
   global:
