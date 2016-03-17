@@ -39,7 +39,7 @@ install:
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
   - test -e $ISABELLE || { wget ${ISABELLE_URL} && tar -C ${INSTALL_DIR}/ -xzf ${ISABELLE_TARBALL}; }
   - test -e ${ISABELLE_USER_SETTINGS} || { mkdir -p $(dirname ${ISABELLE_USER_SETTINGS}) && touch ${ISABELLE_USER_SETTINGS}; }
-  - grep init_component ${ISABELLE_USER_SETTINGS} || echo 'init_component "${AFP_DIR}"' >> ${ISABELLE_USER_SETTINGS}; }
+  - grep init_component ${ISABELLE_USER_SETTINGS} || echo 'init_component "${AFP_DIR}"' >> ${ISABELLE_USER_SETTINGS}
   - grep ISABELLE_BUILD_OPTIONS ${ISABELLE_USER_SETTINGS} || echo 'ISABELLE_BUILD_OPTIONS="threads=1"' >> ${ISABELLE_USER_SETTINGS}
   - grep ML_OPTIONS ${ISABELLE_USER_SETTINGS} || echo 'ML_OPTIONS="-H 500"' >> ${ISABELLE_USER_SETTINGS}
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
