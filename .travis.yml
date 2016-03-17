@@ -60,5 +60,8 @@ before_cache:
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/FormalSSA*
   - rm -f `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/log/compcertSSA.gz
-  - rm -f `find ${TRAVIS_BUILD_DIR}/compcertSSA \( -type f -o -type l \) -not -name "*.vo" -not -name "ndfun*"`
+  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "*.vo" > /tmp/cccf
+  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "*.vp" | sed -e "s/\.vp/\.v/g" >> /tmp/cccf
+  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && find . -name "ndfun*" >> /tmp/cccf
+  - cd ${TRAVIS_BUILD_DIR}/compcertSSA && shopt -s extglob && echo !(`cat /tmp/cccf | tr '\n' '|'`) | xargs rm
   - rm -r `find ${TRAVIS_BUILD_DIR}/compcertSSA -type d -empty`
