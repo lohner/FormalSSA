@@ -49,5 +49,8 @@ install:
   - travis_wait opam install -y coq.8.4.5
 
 script:
-  - ${ISABELLE} build -b -v -d '$AFP' Collections
+  - ${ISABELLE} build -s -b -v -d '$AFP' Refine_Monadic
   - true || make FormalSSA ISABELLE=${ISABELLE}
+
+before_cache:
+  - rm -rf `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps
