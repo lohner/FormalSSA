@@ -11,6 +11,8 @@ addons:
     - ocaml
     - texlive-latex-base
     - texlive-latex-extra
+    - pgf
+    - texlive-pictures
 
 env:
   global:
