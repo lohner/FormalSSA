@@ -29,7 +29,6 @@ env:
 
 cache:
   directories:
-  - ${INSTALL_DIR}
   - ${HOME}/.isabelle
   - ${OPAM_DIR}
 
@@ -39,18 +38,15 @@ before_install:
 install:
   - test -d ${INSTALL_DIR} || mkdir -p ${INSTALL_DIR}
   - test -e $ISABELLE || { wget ${ISABELLE_URL} && tar -C ${INSTALL_DIR}/ -xzf ${ISABELLE_TARBALL}; }
-  - test -e ${ISABELLE_USER_SETTINGS} || { mkdir -p $(dirname ${ISABELLE_USER_SETTINGS}) && echo 'init_component "${AFP_DIR}"' > ${ISABELLE_USER_SETTINGS}; }
+  - test -e ${ISABELLE_USER_SETTINGS} || { mkdir -p $(dirname ${ISABELLE_USER_SETTINGS}) && touch ${ISABELLE_USER_SETTINGS}; }
+  - grep init_component ${ISABELLE_USER_SETTINGS} || echo 'init_component "${AFP_DIR}"' >> ${ISABELLE_USER_SETTINGS}; }
   - grep ISABELLE_BUILD_OPTIONS ${ISABELLE_USER_SETTINGS} || echo 'ISABELLE_BUILD_OPTIONS="threads=1"' >> ${ISABELLE_USER_SETTINGS}
   - grep ML_OPTIONS ${ISABELLE_USER_SETTINGS} || echo 'ML_OPTIONS="-H 500"' >> ${ISABELLE_USER_SETTINGS}
-  - test -e `$ISABELLE getenv -b ISABELLE_HOME`/heaps/`$ISABELLE getenv -b ML_IDENTIFIER`/HOL || $ISABELLE build -b -s -v HOL
   - test -d ${AFP_DIR} || (cd ${INSTALL_DIR}; hg clone ${AFP_REPO})
   - (cd ${AFP_DIR}; hg pull -u)
   - opam init -y
   - travis_wait opam install -y coq.8.4.5
 
 script:
-  - ${ISABELLE} build -s -b -v -d '$AFP' Refine_Monadic
+  - ${ISABELLE} build -b -v -d '$AFP' Refine_Monadic
   - true || make FormalSSA ISABELLE=${ISABELLE}
-
-before_cache:
-  - rm -rf `$ISABELLE getenv -b ISABELLE_HOME_USER`/heaps
